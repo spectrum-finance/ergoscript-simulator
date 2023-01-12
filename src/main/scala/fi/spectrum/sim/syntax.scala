@@ -1,5 +1,6 @@
 package fi.spectrum.sim
 
+import fi.spectrum.sim.runtime.NonRunnable
 import scorex.crypto.hash.Blake2b256
 
 import scala.util.Try
@@ -24,16 +25,16 @@ object syntax {
       box.registers.get(i).flatMap(a => Try(a.asInstanceOf[T]).toOption)
   }
 
-  def OUTPUTS(i: Int)(implicit ctx: RuntimeCtx): BoxSpec[Runtime.NonRunnable] =
+  def OUTPUTS(i: Int)(implicit ctx: RuntimeCtx): BoxSpec[NonRunnable] =
     ctx.outputs(i)
 
-  def OUTPUTS(implicit ctx: RuntimeCtx): Coll[BoxSpec[Runtime.NonRunnable]] =
+  def OUTPUTS(implicit ctx: RuntimeCtx): Coll[BoxSpec[NonRunnable]] =
     ctx.outputs.toVector
 
-  def INPUTS(i: Int)(implicit ctx: RuntimeCtx): BoxSpec[Runtime.NonRunnable] =
+  def INPUTS(i: Int)(implicit ctx: RuntimeCtx): BoxSpec[NonRunnable] =
     ctx.inputs(i)
 
-  def INPUTS(implicit ctx: RuntimeCtx): Coll[BoxSpec[Runtime.NonRunnable]] =
+  def INPUTS(implicit ctx: RuntimeCtx): Coll[BoxSpec[NonRunnable]] =
     ctx.inputs.toVector
 
   def HEIGHT(implicit ctx: RuntimeCtx): Int = ctx.height
