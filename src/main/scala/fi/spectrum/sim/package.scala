@@ -38,6 +38,8 @@ package object sim {
     def apply(i: Int): A = inner.apply(i)
 
     def size: Int = inner.size
+
+    override def toString: String = s"Coll(${inner.map(x => x.toString).mkString(", ")})"
   }
 
   implicit def toColl[A](vec: Vector[A]): Coll[A] = CollOpaque(vec)
