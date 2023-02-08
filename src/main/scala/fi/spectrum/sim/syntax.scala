@@ -61,6 +61,6 @@ object syntax {
     ctx.signatories.contains(prop)
 
   implicit class ToSigmaPropOps(prop: SigmaProp) {
-    def propBytes: Coll[Byte] = prop.value.getBytes().toVector
+    def propBytes: Coll[Byte] = prop.value
   }
 }

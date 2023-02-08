@@ -14,7 +14,7 @@ object runtime {
   type Ledger[A] = State[RuntimeCtx, A]
 }
 
-final case class SigmaProp(value: String)
+final case class SigmaProp(value: Coll[Byte])
 
 final case class RuntimeCtx(
   height: Int,

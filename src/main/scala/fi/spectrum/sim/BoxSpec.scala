@@ -3,7 +3,6 @@ package fi.spectrum.sim
 import fi.spectrum.sim.runtime.NonRunnable
 import org.ergoplatform.ErgoBox
 import scorex.util.encode.Base16
-import sigmastate.Values.ConstantNode
 
 import scala.util.Try
 
@@ -65,26 +64,10 @@ object AnyBoxSpec {
           validatorBytes = Base16.encode(bx.ergoTree.bytes),
           tokens         = bx.additionalTokens.toArray.map { case (id, v) => CollOpaque(id.toVector) -> v }.toVector,
           registers = bx.additionalRegisters.toVector.map { case (r, v) =>
-            r.number.toInt -> {
-              v match {
-                case ConstantNode(array: special.collection.CollOverArray[Any @unchecked], _) =>
-                  CollOpaque(array.toArray.toVector)
-                case ConstantNode(sigmastate.eval.CSigmaProp(_), _) => false
-                case ConstantNode(v, _)                             => v
-                case v                                              => v
-              }
-            }
+            r.number.toInt -> sigma.transformVal(v)
           }.toMap,
           constants = bx.ergoTree.constants.toVector.zipWithIndex.map { case (c, ix) =>
-            ix -> {
-              c match {
-                case ConstantNode(array: special.collection.CollOverArray[Any @unchecked], _) =>
-                  CollOpaque(array.toArray.toVector)
-                case ConstantNode(sigmastate.eval.CSigmaProp(_), _) => false
-                case ConstantNode(v, _)                             => v
-                case v                                              => v
-              }
-            }
+            ix -> sigma.transformVal(c)
           }.toMap
         )
       )

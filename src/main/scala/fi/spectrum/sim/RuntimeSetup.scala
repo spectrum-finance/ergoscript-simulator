@@ -7,6 +7,7 @@ import io.circe.{Decoder, Json, Printer}
 import org.ergoplatform.ErgoBox.BoxId
 import org.ergoplatform.{ErgoBox, ErgoLikeTransaction, JsonCodecs}
 import scorex.util.encode.Base16
+import sigmastate.interpreter.ContextExtension
 import sttp.client3._
 import sttp.client3.circe.asJson
 import sttp.client3.okhttp.OkHttpSyncBackend
@@ -26,17 +27,20 @@ object RuntimeSetup extends JsonCodecs {
   }
 
   def fromIOs[Box[_[_]]](
-    inputs: List[ErgoBox],
+    inputs: List[(ErgoBox, ContextExtension)],
     outputs: List[ErgoBox],
     selfInputIx: Int,
     height: Int
   )(implicit fromBox: TryFromBox[Box, Ledger]): Option[RuntimeSetup[Box]] = {
-    val selfIn = inputs(selfInputIx)
+    val (selfIn, ext) = inputs(selfInputIx)
     for {
       selfBox <- fromBox.tryFromBox(selfIn)
       ctx = RuntimeCtx(
         height,
-        inputs  = inputs.map(AnyBoxSpec.tryFromBox.tryFromBox).collect { case Some(x) => x },
+        vars = ext.values.toVector.map { case (ix, c) =>
+          ix.toInt -> sigma.transformVal(c)
+        }.toMap,
+        inputs  = inputs.map(_._1).map(AnyBoxSpec.tryFromBox.tryFromBox).collect { case Some(x) => x },
         outputs = outputs.map(AnyBoxSpec.tryFromBox.tryFromBox).collect { case Some(x) => x }
       )
     } yield RuntimeSetup(selfBox, ctx)
@@ -44,8 +48,8 @@ object RuntimeSetup extends JsonCodecs {
 
   private lazy val backend = OkHttpSyncBackend()
 
-  private def pullIOs(tx: ErgoLikeTransaction): (List[ErgoBox], List[ErgoBox]) = {
-    val inputs = tx.inputs.flatMap(i => pullBox(i.boxId))
+  private def pullIOs(tx: ErgoLikeTransaction): (List[(ErgoBox, ContextExtension)], List[ErgoBox]) = {
+    val inputs = tx.inputs.flatMap(i => pullBox(i.boxId).map(_ -> i.spendingProof.extension))
     inputs.toList -> tx.outputs.toList
   }
 
@@ -60,7 +64,9 @@ object RuntimeSetup extends JsonCodecs {
     .flatMap(_.data.boxes.headOption)
 
   def body(id: BoxId): String =
-    s"""{"query":"{boxes(boxId:\\"${Base16.encode(id)}\\") {boxId,value,creationHeight,transactionId,index,ergoTree,additionalRegisters,assets{tokenId,amount,}}}"}"""
+    s"""{"query":"{boxes(boxId:\\"${Base16.encode(
+      id
+    )}\\") {boxId,value,creationHeight,transactionId,index,ergoTree,additionalRegisters,assets{tokenId,amount,}}}"}"""
   def bodyJson(id: BoxId): Json = io.circe.parser.parse(body(id)).toOption.get
 
   // curl 'https://gql.ergoplatform.com/' -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://gql.ergoplatform.com' --data-binary '{"query":"{\n  boxes(boxId: \"e8cb8e8acbebab6b9ba3706904facd70393f5731c7e36a55caa660fde5419b60\") {\n    boxId,\n    value,\n    creationHeight,\n    index,\n    ergoTree,\n    additionalRegisters,\n    assets {\n      tokenId,\n      amount,\n    }\n  }\n}"}' --compressed
