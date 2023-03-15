@@ -63,13 +63,12 @@ object RuntimeSetup extends JsonCodecs {
     .toOption
     .flatMap(_.data.boxes.headOption)
 
-  def body(id: BoxId): String =
+  private def body(id: BoxId): String =
     s"""{"query":"{boxes(boxId:\\"${Base16.encode(
       id
     )}\\") {boxId,value,creationHeight,transactionId,index,ergoTree,additionalRegisters,assets{tokenId,amount,}}}"}"""
-  def bodyJson(id: BoxId): Json = io.circe.parser.parse(body(id)).toOption.get
 
-  // curl 'https://gql.ergoplatform.com/' -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://gql.ergoplatform.com' --data-binary '{"query":"{\n  boxes(boxId: \"e8cb8e8acbebab6b9ba3706904facd70393f5731c7e36a55caa660fde5419b60\") {\n    boxId,\n    value,\n    creationHeight,\n    index,\n    ergoTree,\n    additionalRegisters,\n    assets {\n      tokenId,\n      amount,\n    }\n  }\n}"}' --compressed
+  private def bodyJson(id: BoxId): Json = io.circe.parser.parse(body(id)).toOption.get
 
   implicit val jsonSerializer: BodySerializer[Json] = json =>
     StringBody(json.printWith(Printer.noSpaces), "utf-8", MediaType.ApplicationJson)

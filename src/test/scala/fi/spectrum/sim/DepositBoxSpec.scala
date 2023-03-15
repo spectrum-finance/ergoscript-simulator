@@ -20,7 +20,7 @@ final class DepositBoxSpec[F[_]: RuntimeState](
       // Bind constants:
       val PoolId: Coll[Byte]         = getConstant(1).get
       val RedeemerProp: Coll[Byte]   = getConstant(3).get
-      val RefundPk: Boolean          = getConstant(6).get
+      val RefundPk: SigmaProp        = getConstant(6).get
       val BundlePropHash: Coll[Byte] = getConstant(10).get
       val ExpectedNumEpochs: Int     = getConstant(14).get
       val MinerPropBytes: Coll[Byte] = getConstant(18).get

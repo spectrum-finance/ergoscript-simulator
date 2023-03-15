@@ -1,9 +1,25 @@
+import sbt.Keys.{crossScalaVersions, version}
+import xerial.sbt.Sonatype.GitHubHosting
+
 version := "0.1.0-SNAPSHOT"
 
 scalaVersion := "2.12.17"
 
 lazy val NexusReleases  = "Sonatype Releases" at "https://s01.oss.sonatype.org/content/repositories/releases"
 lazy val NexusSnapshots = "Sonatype Snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots"
+
+lazy val publishingSettings = List(
+  sonatypeProfileName := "fi.spectrum",
+  publishTo := sonatypePublishToBundle.value,
+  sonatypeCredentialHost := "s01.oss.sonatype.org",
+  versionScheme := Some("semver-spec"),
+  licenses := Seq("CC0 1.0 Universal" -> url("https://github.com/spectrum-finance/ergoscript-simulator/blob/master/LICENSE")),
+  homepage := Some(url("https://github.com/spectrum-finance/ergoscript-simulator")),
+  publishArtifact := true,
+  publishMavenStyle := true,
+  Test / publishArtifact := false,
+  sonatypeProjectHosting := Some(GitHubHosting("spectrum-finance", "ergoscript-simulator", "i.oskin@spectrum.fi"))
+)
 
 lazy val root = (project in file("."))
   .settings(
