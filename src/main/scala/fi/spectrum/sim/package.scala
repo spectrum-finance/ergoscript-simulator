@@ -31,6 +31,8 @@ package object sim {
   }
 
   final case class CollOpaque[+A](inner: Vector[A]) {
+    def exists(f: A => Boolean): Boolean = inner.exists(f)
+
     def fold[A1 >: A](z: A1, op: (A1, A1) => A1): A1 = inner.fold(z)(op)
 
     def map[B](f: A => B): CollOpaque[B] = inner.map(f)

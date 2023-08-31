@@ -41,6 +41,8 @@ object syntax {
 
   def sigmaProp(x: Boolean): Boolean = x
 
+  def allOf(coll: Coll[Boolean]): Boolean = !coll.inner.contains(false)
+
   def blake2b256(xs: Coll[Byte]): Coll[Byte] = Blake2b256.hash(xs.inner.toArray).toVector
 
   def getVar[T](i: Byte)(implicit ctx: RuntimeCtx): Option[T] =
