@@ -2,6 +2,7 @@ package fi.spectrum.sim
 
 import fi.spectrum.sim.runtime.NonRunnable
 import scorex.crypto.hash.Blake2b256
+import scorex.util.encode.Base16
 
 import scala.util.Try
 
@@ -47,6 +48,8 @@ object syntax {
 
   def getVar[T](i: Byte)(implicit ctx: RuntimeCtx): Option[T] =
     ctx.vars.get(i.toInt).flatMap(a => Try(a.asInstanceOf[T]).toOption)
+
+  def fromBase16(arg: String): Coll[Byte] = Base16.decode(arg).get.toVector
 
   def max(x: Int, y: Int): Int = math.max(x, y)
 

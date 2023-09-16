@@ -12,7 +12,7 @@ final class DepositBoxSpec[F[_]: RuntimeState](
   override val tokens: Coll[(Coll[Byte], Long)],
   override val registers: Map[Int, Any],
   override val constants: Map[Int, Any],
-  override val validatorBytes: String
+  override val propositionBytes: Coll[Byte]
 ) extends BoxSpec[F] {
 
   override val validator: F[Boolean] =
@@ -75,7 +75,7 @@ final class DepositBoxSpec[F[_]: RuntimeState](
 
 object DepositBoxSpec {
   def apply[F[_]: RuntimeState, G[_]](bx: BoxSpec[G]): DepositBoxSpec[F] =
-    new DepositBoxSpec(bx.id, bx.value, bx.creationHeight, bx.tokens, bx.registers, bx.constants, bx.validatorBytes)
+    new DepositBoxSpec(bx.id, bx.value, bx.creationHeight, bx.tokens, bx.registers, bx.constants, bx.propositionBytes)
   implicit def tryFromBox[F[_]: RuntimeState]: TryFromBox[DepositBoxSpec, F] =
     AnyBoxSpec.tryFromBox.translate(apply[F, NonRunnable])
 }

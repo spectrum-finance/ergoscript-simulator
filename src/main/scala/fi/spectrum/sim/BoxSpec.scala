@@ -13,7 +13,7 @@ trait BoxSpec[+F[_]] {
   val creationHeight: Int
   val tokens: Coll[(Coll[Byte], Long)]
   val registers: Map[Int, Any]
-  val validatorBytes: String
+  val propositionBytes: Coll[Byte]
   val validator: F[Boolean]
   val constants: Map[Int, Any] = Map.empty
 
@@ -22,8 +22,6 @@ trait BoxSpec[+F[_]] {
   final def SELF: BoxSpec[F] = self
 
   final def creationInfo: (Int, Int) = (creationHeight, creationHeight)
-
-  final def propositionBytes: Coll[Byte] = validatorBytes.getBytes().toVector
 
   final def getConstant[T](i: Int): Option[T] = constants.get(i).flatMap(c => Try(c.asInstanceOf[T]).toOption)
 
@@ -34,7 +32,7 @@ trait BoxSpec[+F[_]] {
       override val creationHeight: Int              = self.creationHeight
       override val tokens: Coll[(Coll[Byte], Long)] = self.tokens
       override val registers: Map[Int, Any]         = self.registers + (reg -> v)
-      override val validatorBytes: String           = self.validatorBytes
+      override val propositionBytes: Coll[Byte]     = self.propositionBytes
       override val validator: F[Boolean]            = self.validator
       override val constants: Map[Int, Any]         = self.constants
     }
@@ -47,7 +45,7 @@ final case class AnyBoxSpec(
   override val creationHeight: Int,
   override val tokens: Coll[(Coll[Byte], Long)],
   override val registers: Map[Int, Any],
-  override val validatorBytes: String,
+  override val propositionBytes: Coll[Byte],
   override val constants: Map[Int, Any]
 ) extends BoxSpec[NonRunnable] {
   override val validator: NonRunnable[Boolean] = ()
@@ -58,11 +56,11 @@ object AnyBoxSpec {
     (bx: ErgoBox) =>
       Some(
         AnyBoxSpec(
-          id             = bx.id.toVector,
-          value          = bx.value,
-          creationHeight = bx.creationHeight,
-          validatorBytes = Base16.encode(bx.ergoTree.bytes),
-          tokens         = bx.additionalTokens.toArray.map { case (id, v) => CollOpaque(id.toVector) -> v }.toVector,
+          id               = bx.id.toVector,
+          value            = bx.value,
+          creationHeight   = bx.creationHeight,
+          propositionBytes = bx.ergoTree.bytes.toVector,
+          tokens           = bx.additionalTokens.toArray.map { case (id, v) => CollOpaque(id.toVector) -> v }.toVector,
           registers = bx.additionalRegisters.toVector.map { case (r, v) =>
             r.number.toInt -> sigma.transformVal(v)
           }.toMap,
